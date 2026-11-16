@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}History · BinaryScope{% endblock %}
+
+{% block content %}
+  <section>
+    <h1>Analysis History</h1>
+    <p>Previously analyzed executable files.</p>
+
+    {% if analyses %}
+      <div class="table-scroll" role="region" aria-label="Analysis history" tabindex="0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Format</th>
+              <th>Architecture</th>
+              <th>Analyzed At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for analysis in analyses %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('view_analysis', analysis_id=analysis.id) }}">
+                    {{ analysis.filename }}
+                  </a>
+                </td>
+                <td>{{ analysis.pe_format }}</td>
+                <td>{{ analysis.architecture }}</td>
+                <td>
+                  <time datetime="{{ analysis.analyzed_at }}">
+                    {{ analysis.analyzed_at[:19] | replace("T", " ") }} UTC
+                  </time>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No analyses saved yet.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if error %}Error: {% endif %}Analyze a PE file · BinaryScope{% endblock %}
+
+{% block content %}
+  <div class="upload">
+    <h1>Analyze a PE file</h1>
+    <p class="lead">
+      Inspect the headers, sections, imports and strings of a Windows executable
+      or DLL. BinaryScope reads the file as bytes and never runs it.
+    </p>
+
+    <form class="upload-form" action="{{ url_for('analyze') }}" method="POST" enctype="multipart/form-data">
+      {% if error %}
+        <p id="upload-error" class="alert" role="alert">{{ error }}</p>
+      {% endif %}
+
+      <label for="file">Executable or DLL</label>
+      <input id="file" type="file" name="file" accept=".exe,.dll" required
+             aria-describedby="{% if error %}upload-error {% endif %}file-hint" {% if error %}aria-invalid="true" autofocus{%
+             endif %} />
+      <p id="file-hint" class="hint">
+        Accepts .exe and .dll files up to {{ max_file_size | filesize }}.
+      </p>
+
+      <button type="submit">Analyze file</button>
+    </form>
+
+    <p class="note">Uploaded files are deleted as soon as the analysis finishes.</p>
+  </div>
+{% endblock %}

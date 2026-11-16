@@ -1,0 +1,17 @@
+@"
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+instance/
+.pytest_cache/
+.vscode/
+*.exe
+*.dll
+*.zip
+"@ | Set-Content .gitignore

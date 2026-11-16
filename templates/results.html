@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ filename }} · BinaryScope{% endblock %}
+
+{% block header_actions %}
+  <a class="button button-secondary" href="{{ url_for('index') }}">New analysis</a>
+{% endblock %}
+
+{% block content %}
+{# Addresses and offsets: zero-padded hex. Sizes stay decimal bytes. #}
+  {% macro hex(value, width=8) -%}
+    <code class="hex"><span class="hex-prefix">0x</span>{{ "{:0{}X}".format(value, width) }}</code>
+  {%- endmacro %}
+
+  {% set string_limit = 200 %}
+  {% set string_count = results.strings | length %}
+  {% set dll_count = results.imports | length %}
+  {% set function_count = results.imports | map(attribute="functions") | map("length") | sum %}
+  {% set pointer_width = 16 if results.headers.pe_type == "PE32+" else 8 %}
+
+  <div class="report-header">
+    <h1 class="filename">{{ filename }}</h1>
+
+    <dl class="facts">
+      <div class="fact">
+        <dt>Format</dt>
+        <dd><code>{{ results.headers.pe_type }}</code></dd>
+      </div>
+      <div class="fact">
+        <dt>Architecture</dt>
+        <dd>{{ machine }}</dd>
+      </div>
+      <div class="fact">
+        <dt>Subsystem</dt>
+        <dd>{{ subsystem }}</dd>
+      </div>
+      <div class="fact">
+        <dt>Size</dt>
+        <dd>{{ results.file_size | filesize }}{% if results.file_size >= 1024 %} <span class="exact-size">({{
+          "{:,}".format(results.file_size) }} bytes)</span>{% endif %}</dd>
+      </div>
+      <div class="fact">
+        <dt>Image base</dt>
+        <dd>{{ hex(results.headers.image_base, pointer_width) }}</dd>
+      </div>
+      <div class="fact">
+        <dt>Entry point RVA</dt>
+        <dd>{{ hex(results.headers.entry_point) }}</dd>
+      </div>
+      <div class="fact fact-wide">
+        <dt>SHA-256</dt>
+        <dd><code class="hash">{{ results.sha256 }}</code></dd>
+      </div>
+    </dl>
+
+    <nav class="report-nav" aria-label="Report sections">
+      <a href="#sections">Sections <span class="count">{{ results.sections | length }}</span></a>
+      <a href="#imports">Imports <span class="count">{{ dll_count }}</span></a>
+      <a href="#strings">Strings <span class="count">{{ "{:,}".format(string_count) }}</span></a>
+    </nav>
+  </div>
+
+  <section id="sections" class="report-section" aria-labelledby="sections-heading">
+    <div class="section-heading">
+      <h2 id="sections-heading">Sections</h2>
+      <p class="section-meta">Addresses and offsets in hexadecimal, sizes in bytes</p>
+    </div>
+
+    <div class="table-scroll" role="region" aria-labelledby="sections-heading" tabindex="0">
+      <table class="data-table section-table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Virtual address</th>
+            <th scope="col" class="num">Virtual size</th>
+            <th scope="col">Raw offset</th>
+            <th scope="col" class="num">Raw size</th>
+            <th scope="col">Characteristics</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for section in results.sections %}
+            {% set flags = section.characteristics | section_flags %}
+            <tr>
+              <th scope="row"><code>{{ section.name }}</code></th>
+              <td>{{ hex(section.virtual_address) }}</td>
+              <td class="num">{{ "{:,}".format(section.virtual_size) }}</td>
+              <td>{{ hex(section.pointer_to_raw_data) }}</td>
+              <td class="num">{{ "{:,}".format(section.size_of_raw_data) }}</td>
+              <td class="characteristics">
+                <code class="flags">{{ flags | join(" | ") if flags else "No recognized flags" }}</code>
+                <span class="raw-value">{{ hex(section.characteristics) }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="imports" class="report-section" aria-labelledby="imports-heading">
+    <div class="section-heading">
+      <h2 id="imports-heading">Imports</h2>
+      {% if results.imports %}
+        <p class="section-meta">
+          {{ dll_count }} {{ "library" if dll_count == 1 else "libraries" }},
+          {{ function_count }} {{ "function" if function_count == 1 else "functions" }}
+        </p>
+      {% endif %}
+    </div>
+
+    {% for imported_dll in results.imports %}
+      {% set count = imported_dll.functions | length %}
+      <details class="disclosure import">
+        <summary>
+          <code class="dll">{{ imported_dll.dll }}</code>
+          <span class="count">{{ count }} {{ "function" if count == 1 else "functions" }}</span>
+        </summary>
+
+        <ul class="functions">
+          {% for function in imported_dll.functions %}
+            <li><code>{% if "name" in function %}{{ function.name }}{% else %}Ordinal {{ function.ordinal }}{% endif %}</code>
+            </li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% else %}
+      <p class="empty">No imports found.</p>
+    {% endfor %}
+  </section>
+
+  <section id="strings" class="report-section" aria-labelledby="strings-heading">
+    <div class="section-heading">
+      <h2 id="strings-heading">Strings</h2>
+      {% if results.strings %}
+        <p class="section-meta">
+          {% if string_count > string_limit %}
+            Showing the first {{ string_limit }} of {{ "{:,}".format(string_count) }} printable ASCII strings
+          {% else %}
+            {{ "{:,}".format(string_count) }} printable ASCII {{ "string" if string_count == 1 else "strings" }}
+          {% endif %}
+        </p>
+      {% endif %}
+    </div>
+
+    {% if results.strings %}
+      <details class="disclosure strings-disclosure">
+        <summary>Expand</summary>
+        <table class="data-table strings-table">
+          <thead>
+            <tr>
+              <th scope="col">File offset</th>
+              <th scope="col">String</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for string in results.strings[:string_limit] %}
+              <tr>
+                <td>{{ hex(string.offset) }}</td>
+                <td><code class="string">{{ string.value }}</code></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    {% else %}
+      <p class="empty">No printable ASCII strings found.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#141619" />
+
+    <title>{% block title %}BinaryScope{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="wordmark" href="{{ url_for('index') }}">BinaryScope</a>
+        <nav class="header-actions" aria-label="Main navigation">
+          <a class="button button-secondary" href="{{ url_for('history_page') }}">
+            History
+          </a>
+          {% block header_actions %}{% endblock %}
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="container">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+
+</html>
