@@ -248,7 +248,7 @@ def extract_strings(path, min_length=6):
 
 def rva_to_file_offset(rva, sections, size_of_headers):
     file_offset = None
-    # Some RVAs only exist in memory, not in the file
+
     if 0 <= rva < size_of_headers:
         return rva
 
@@ -261,6 +261,7 @@ def rva_to_file_offset(rva, sections, size_of_headers):
 
             file_offset = section["pointer_to_raw_data"] + displacement
 
+    # Some RVAs only exist in memory, not in the file
     if file_offset is None:
         raise ValueError("RVA is not backed by section file data")
 
