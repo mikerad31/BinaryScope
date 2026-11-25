@@ -107,3 +107,10 @@ def test_parse_headers_missing_pe():
     buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x40\x00\x00\x00" + b"\x00\x00\x00\x00")
     with pytest.raises(ValueError, match="Missing PE"):
         parse_headers(buffer)
+
+
+# e_lfanew points past the end of the file, so the PE check still raises
+def test_parse_headers_pe_offset_past_end():
+    buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x00\x10\x00\x00")
+    with pytest.raises(ValueError, match="Missing PE"):
+        parse_headers(buffer)
