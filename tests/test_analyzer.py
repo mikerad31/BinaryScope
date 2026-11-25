@@ -103,7 +103,7 @@ def test_parse_headers_missing_mz():
         parse_headers(buffer)
 
 
-def test_parse_headers_mz():
+def test_parse_headers_missing_pe():
     buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x40\x00\x00\x00" + b"\x00\x00\x00\x00")
     with pytest.raises(ValueError, match="Missing PE"):
         parse_headers(buffer)
