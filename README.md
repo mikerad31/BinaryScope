@@ -22,6 +22,25 @@ The parser also runs without the web app:
 
     python analyzer.py path\to\program.exe
 
+## Running the tests
+
+Install pytest, then run the tests from the project folder:
+
+    python -m pip install pytest
+    python -m pytest -q
+
+Use `python -m pytest` rather than plain `pytest` so `analyzer.py` can be imported from the project root.
+
+The tests cover normal and edge cases in `rva_to_file_offset`, `read_uint`, `read_c_string`, and `parse_headers`, including malformed PE headers built byte by byte.
+
+`tests/samples/hello.exe` is a small "Hello, World!" program built from `hello.c` with MinGW-w64:
+
+    x86_64-w64-mingw32-gcc -s -o tests/samples/hello.exe tests/samples/hello.c
+
+The integration tests run `analyze_file` on it and check its headers, section names, and imported DLLs against objdump's output. They also make sure truncated copies raise a clean error instead of crashing.
+
+GitHub Actions runs flake8 and the tests on every push to `main`.
+
 ## What the report shows
 
 - **Overview:** PE32 or PE32+, architecture, subsystem, image base, entry point, file size, SHA-256
@@ -40,6 +59,9 @@ For Notepad that is 8 sections, 50 imported DLLs, 315 imported functions, and 94
 - `templates/`: `layout.html` (shared layout), `index.html` (upload form), `results.html` (report), `history.html` (saved list).
 - `static/style.css`: styling.
 - `requirements.txt`: Python dependencies.
+- `tests/test_analyzer.py`: pytest tests for the parser.
+- `tests/samples/`: `hello.c` and the `hello.exe` built from it, used by the tests.
+- `.github/workflows/python-app.yml`: runs flake8 and the tests on GitHub Actions.
 
 ## How the parser works
 
