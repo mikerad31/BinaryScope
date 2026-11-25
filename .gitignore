@@ -13,3 +13,4 @@ instance/
 *.exe
 *.dll
 *.zip
+!tests/samples/*.exe
