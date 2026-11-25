@@ -1,7 +1,9 @@
 # tests/test_analyzer.py
+from io import BytesIO
+
 import pytest
 
-from analyzer import rva_to_file_offset
+from analyzer import read_uint, rva_to_file_offset
 
 # notepad.exe
 
@@ -26,7 +28,7 @@ SECTIONS = [
 SIZE_OF_HEADERS = 4096
 
 
-# RVA is entry point which is 0x19C0 and the rva and file offset are the same so they end up in the same place on disk and in memory
+# RVA is entry point which is 0x19C0 and the RVA and file offset are the same so they end up in the same place on disk and in memory
 def test_rva_in_text():
     assert rva_to_file_offset(0x19C0, SECTIONS, SIZE_OF_HEADERS) == 0x19C0
 
@@ -47,3 +49,20 @@ def test_rva_in_headers():
 def test_rva_in_data_memory_only_raises():
     with pytest.raises(ValueError):
         rva_to_file_offset(0x36000, SECTIONS, SIZE_OF_HEADERS)
+
+
+def test_read_uint_2_bytes():
+    buffer = BytesIO(b"\x4c\x01")
+    assert read_uint(buffer, 2) == 0x14C
+    assert buffer.tell() == 2
+
+
+def test_read_uint_not_enough_bytes():
+    buffer = BytesIO(b"\x4c\x01")
+    with pytest.raises(ValueError):
+        read_uint(buffer, 4)
+
+
+def test_read_uint_4_bytes():
+    buffer = BytesIO(b"\x4c\x01\x8a\xf0")
+    assert read_uint(buffer, 4) == 0xF08A014C
