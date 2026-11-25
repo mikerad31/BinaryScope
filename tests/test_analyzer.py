@@ -114,3 +114,11 @@ def test_parse_headers_pe_offset_past_end():
     buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x00\x10\x00\x00")
     with pytest.raises(ValueError, match="Missing PE"):
         parse_headers(buffer)
+
+
+def test_parse_headers_invalid_magic_number():
+    buffer = BytesIO(
+        b"MZ" + b"\x00" * 58 + b"\x40\x00\x00\x00" + b"PE\0\0" + b"\x00" * 40
+    )
+    with pytest.raises(ValueError, match="Invalid magic number"):
+        parse_headers(buffer)
