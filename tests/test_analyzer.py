@@ -187,3 +187,19 @@ def test_hello_exe_imports(hello_analysis):
     for entry in hello_analysis["imports"]:
         imports.append(entry["dll"])
     assert imports == ["KERNEL32.dll", "msvcrt.dll"]
+
+
+def test_hello_exe_truncated(tmp_path):
+    data = HELLO_EXE.read_bytes()
+    truncated = tmp_path / "truncated.exe"
+    truncated.write_bytes(data[:0x400])
+    with pytest.raises(ValueError, match="raw data outside file"):
+        analyze_file(truncated)
+
+
+def test_hello_exe_truncated_inside_headers(tmp_path):
+    data = HELLO_EXE.read_bytes()
+    truncated = tmp_path / "truncated.exe"
+    truncated.write_bytes(data[:0x3FF])
+    with pytest.raises(ValueError, match="exceeds file size"):
+        analyze_file(truncated)
