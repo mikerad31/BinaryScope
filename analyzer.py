@@ -72,7 +72,7 @@ def parse_headers(file):
         import_directory_offset = 120
 
     else:
-        raise ValueError("Unsupported Optional Header magic")
+        raise ValueError("Invalid magic number")
 
     if size_of_optional_header < rva_count_offset + 4:
         raise ValueError("Optional Header too small for directory count")

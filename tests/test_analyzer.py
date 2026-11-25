@@ -122,3 +122,23 @@ def test_parse_headers_invalid_magic_number():
     )
     with pytest.raises(ValueError, match="Invalid magic number"):
         parse_headers(buffer)
+
+
+def test_parse_headers_truncated_after_pe_signature():
+    buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x40\x00\x00\x00" + b"PE\0\0")
+    with pytest.raises(ValueError, match="Unexpected end"):
+        parse_headers(buffer)
+
+
+def test_parse_headers_optional_header_too_small():
+    buffer = BytesIO(
+        b"MZ"
+        + b"\x00" * 58
+        + b"\x40\x00\x00\x00"
+        + b"PE\0\0"
+        + b"\x00" * 20
+        + b"\x0b\x02"
+        + b"\x00" * 30
+    )
+    with pytest.raises(ValueError, match="too small for directory count"):
+        parse_headers(buffer)
