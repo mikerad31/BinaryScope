@@ -1,5 +1,7 @@
 # BinaryScope
 
+[![Python application](https://github.com/mikerad31/BinaryScope/actions/workflows/python-app.yml/badge.svg)](https://github.com/mikerad31/BinaryScope/actions/workflows/python-app.yml)
+
 #### Video Demo: https://youtu.be/tjH2z1n7BHg
 
 #### Description:
