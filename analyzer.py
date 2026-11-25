@@ -249,6 +249,7 @@ def extract_strings(path, min_length=6):
 def rva_to_file_offset(rva, sections, size_of_headers):
     file_offset = None
 
+    # Headers file offset and RVA are the same
     if 0 <= rva < size_of_headers:
         return rva
 

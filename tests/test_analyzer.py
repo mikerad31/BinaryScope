@@ -6,12 +6,12 @@ from analyzer import rva_to_file_offset
 # notepad.exe
 
 _SECTION_ROWS = [
-    (".text", 0x1000, 0x1000, 159744),
-    (".rdata", 0x29000, 0x29000, 45056),
-    (".data", 0x34000, 0x34000, 4096),
-    (".pdata", 0x37000, 0x35000, 8192),
-    (".didat", 0x39000, 0x37000, 4096),
-    (".rsrc", 0x3A000, 0x38000, 126976),
+    (".text", 0x1000, 0x1000, 0x27000),
+    (".rdata", 0x29000, 0x29000, 0xB000),
+    (".data", 0x34000, 0x34000, 0x1000),
+    (".pdata", 0x37000, 0x35000, 0x2000),
+    (".didat", 0x39000, 0x37000, 0x1000),
+    (".rsrc", 0x3A000, 0x38000, 0x1F000),
 ]
 
 SECTIONS = [
@@ -35,7 +35,7 @@ def test_rva_in_pdata():
     assert rva_to_file_offset(0x37000, SECTIONS, SIZE_OF_HEADERS) == 0x35000
 
 
-# RVA is halfway into rsrc section, displacement is 0xF800. 0x3A000 + 0xF800 is 0x47800
+# RVA is halfway into rsrc section, displacement is 0xF800. 0x38000 + 0xF800 is 0x47800
 def test_rva_in_rsrc():
     assert rva_to_file_offset(0x49800, SECTIONS, SIZE_OF_HEADERS) == 0x47800
 
