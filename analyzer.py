@@ -309,7 +309,7 @@ def read_c_string(file, offset, end_offset):
 
     while True:
         if file.tell() >= end_offset:
-            raise ValueError("String exceed file-backed section")
+            raise ValueError("String exceeds file-backed section")
 
         character = read_uint(file, 1)
 
