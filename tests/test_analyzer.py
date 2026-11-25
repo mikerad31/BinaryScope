@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pytest
 
-from analyzer import read_uint, rva_to_file_offset
+from analyzer import read_c_string, read_uint, rva_to_file_offset
 
 # notepad.exe
 
@@ -71,3 +71,27 @@ def test_read_uint_4_bytes():
 def test_read_uint_8_bytes():
     buffer = BytesIO(b"\x00\x00\x00\x40\x01\x00\x00\x00")
     assert read_uint(buffer, 8) == 0x140000000
+
+
+def test_read_c_string():
+    buffer = BytesIO(b"abcKERNEL32.DLL\x00")
+    assert read_c_string(buffer, 3, 16) == "KERNEL32.DLL"
+
+
+def test_read_c_string_no_null():
+    buffer = BytesIO(b"abcdefg")
+    with pytest.raises(ValueError, match="file-backed"):
+        read_c_string(buffer, 0, 7)
+
+
+def test_read_c_string_4096():
+    characters = b"A" * 4096 + b"\x00"
+    buffer = BytesIO(characters)
+    assert read_c_string(buffer, 0, len(characters)) == "A" * 4096
+
+
+def test_read_c_string_4097():
+    characters = b"A" * 4097 + b"\x00"
+    buffer = BytesIO(characters)
+    with pytest.raises(ValueError, match="maximum length"):
+        read_c_string(buffer, 0, len(characters))
