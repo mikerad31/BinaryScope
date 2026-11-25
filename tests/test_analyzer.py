@@ -38,7 +38,8 @@ SECTIONS = [
 SIZE_OF_HEADERS = 4096
 
 
-# RVA is entry point which is 0x19C0 and the RVA and file offset are the same so they end up in the same place on disk and in memory
+# Entry point 0x19C0 is in .text. Its VA and file offset are both 0x1000,
+# so the file offset comes out equal to the RVA
 def test_rva_in_text():
     assert rva_to_file_offset(0x19C0, SECTIONS, SIZE_OF_HEADERS) == 0x19C0
 
