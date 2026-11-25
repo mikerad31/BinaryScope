@@ -1,9 +1,19 @@
 # tests/test_analyzer.py
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 
-from analyzer import parse_headers, read_c_string, read_uint, rva_to_file_offset
+from analyzer import (
+    analyze_file,
+    parse_headers,
+    read_c_string,
+    read_uint,
+    rva_to_file_offset,
+)
+
+HELLO_EXE = Path(__file__).parent / "samples" / "hello.exe"
+
 
 # notepad.exe
 
@@ -142,3 +152,38 @@ def test_parse_headers_optional_header_too_small():
     )
     with pytest.raises(ValueError, match="too small for directory count"):
         parse_headers(buffer)
+
+
+@pytest.fixture(scope="module")
+def hello_analysis():
+    return analyze_file(HELLO_EXE)
+
+
+def test_hello_exe_headers(hello_analysis):
+    headers = hello_analysis["headers"]
+    assert headers["machine"] == 0x8664
+    assert headers["pe_type"] == "PE32+"
+    assert headers["image_base"] == 0x140000000
+
+
+def test_hello_exe_sections(hello_analysis):
+    section_names = [section["name"] for section in hello_analysis["sections"]]
+    assert section_names == [
+        ".text",
+        ".data",
+        ".rdata",
+        ".pdata",
+        ".xdata",
+        ".bss",
+        ".idata",
+        ".CRT",
+        ".tls",
+        ".reloc",
+    ]
+
+
+def test_hello_exe_imports(hello_analysis):
+    imports = []
+    for entry in hello_analysis["imports"]:
+        imports.append(entry["dll"])
+    assert imports == ["KERNEL32.dll", "msvcrt.dll"]
