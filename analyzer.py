@@ -511,6 +511,7 @@ def main():
         print(f"Subsystem: {subsystem_type(headers['subsystem'])}")
         print(f"Image base: {hex(headers['image_base'])}")
         print(f"Entry Point RVA: {hex(headers['entry_point'])}")
+        print(f"Size of headers: {hex(headers['size_of_headers'])}")
         print(f"Sections: {headers['number_of_sections']}")
 
         for section in results["sections"]:
