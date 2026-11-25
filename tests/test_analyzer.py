@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pytest
 
-from analyzer import read_c_string, read_uint, rva_to_file_offset
+from analyzer import parse_headers, read_c_string, read_uint, rva_to_file_offset
 
 # notepad.exe
 
@@ -95,3 +95,15 @@ def test_read_c_string_4097():
     buffer = BytesIO(characters)
     with pytest.raises(ValueError, match="maximum length"):
         read_c_string(buffer, 0, len(characters))
+
+
+def test_parse_headers_missing_mz():
+    buffer = BytesIO(b"\x00")
+    with pytest.raises(ValueError, match="Missing MZ"):
+        parse_headers(buffer)
+
+
+def test_parse_headers_mz():
+    buffer = BytesIO(b"MZ" + b"\x00" * 58 + b"\x40\x00\x00\x00" + b"\x00\x00\x00\x00")
+    with pytest.raises(ValueError, match="Missing PE"):
+        parse_headers(buffer)
