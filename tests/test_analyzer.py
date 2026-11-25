@@ -66,3 +66,8 @@ def test_read_uint_not_enough_bytes():
 def test_read_uint_4_bytes():
     buffer = BytesIO(b"\x4c\x01\x8a\xf0")
     assert read_uint(buffer, 4) == 0xF08A014C
+
+
+def test_read_uint_8_bytes():
+    buffer = BytesIO(b"\x00\x00\x00\x40\x01\x00\x00\x00")
+    assert read_uint(buffer, 8) == 0x140000000
